@@ -1,21 +1,29 @@
-def mac(pattern, filt, n):
-    total = 0.0                          # ① 점수 저장소. 0.0으로 시작
-    for i in range(n):                   # ② 행 순회
-        for j in range(n):               # ③ 열 순회
-            total += pattern[i][j] * filt[i][j]   # ④ 곱해서 누적
-    return total                         # ⑤ 최종 점수 돌려주기
+from io_console import read_grid, print_grid
+from mac import mac
+from judge import judge
 
-cross_filter = [[0,1,0],
-                [1,1,1],
-                [0,1,0]]
+print("=== Mini NPU Simulator ===")
+print("[모드 선택]")
+print("1. 사용자 입력 (3x3)")
+print("2. data.json 분석")
+choice = input("선택: ")
 
-x_filter     = [[1,0,1],
-                [0,1,0],
-                [1,0,1]]
+if choice == "1":
+    filter_a = read_grid(3, "필터 A")
+    print_grid(filter_a, "필터 A")
 
-pattern = [[0,1,0],
-           [1,1,1],
-           [0,1,0]]        # 십자가 패턴
+    filter_b = read_grid(3, "필터 B")
+    print_grid(filter_b, "필터 B")
 
-print("Cross 점수:", mac(pattern, cross_filter, 3))
-print("X 점수:", mac(pattern, x_filter, 3))
+    pattern = read_grid(3, "패턴")
+    print_grid(pattern, "패턴")
+
+    score_a = mac(pattern, filter_a, 3)
+    score_b = mac(pattern, filter_b, 3)
+
+    result = judge(score_a, score_b)
+    display = "판정 불가" if result == "UNDECIDED" else result
+
+    print("A 점수:", score_a)
+    print("B 점수:", score_b)
+    print(f"판정: {display}")
