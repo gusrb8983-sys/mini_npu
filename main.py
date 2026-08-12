@@ -1,6 +1,8 @@
 from io_console import read_grid, print_grid
 from mac import mac
 from judge import judge
+from data_loader import load_json, parse_size_from_key, get_filter_set
+from labels import normalize_label, to_standard_label
 
 print("=== Mini NPU Simulator ===")
 print("[모드 선택]")
@@ -27,3 +29,45 @@ if choice == "1":
     print("A 점수:", score_a)
     print("B 점수:", score_b)
     print(f"판정: {display}")
+
+elif choice == "2":
+    data = load_json("data.json")
+
+    for key, pattern_info in data["patterns"].items():
+        n = parse_size_from_key(key)
+        if n is None:
+            print(f"{key}: 키 형식 오류 → FAIL")
+            continue
+
+        filter_set = get_filter_set(data, n)
+        if filter_set is None:
+            print(f"{key}: size_{n} 필터를 찾을 수 없음 → FAIL")
+            continue
+
+        pattern = pattern_info["input"]
+
+        if len(pattern) != n:
+            print(f"{key}: 패턴 크기가 {n}이 아님 → FAIL")
+            continue
+
+        cross_filter = filter_set["cross"]
+        x_filter = filter_set["x"]
+
+        cross_score = mac(pattern, cross_filter, n)
+        x_score = mac(pattern, x_filter, n)
+
+        result = judge(cross_score, x_score)
+        print(key, "→", result)
+
+        result = judge(cross_score, x_score)
+        my_label = to_standard_label(result)
+
+        expected_raw = pattern_info["expected"]
+        expected_label = normalize_label(expected_raw)
+
+        pass_fail = "PASS" if my_label == expected_label else "FAIL"
+
+        print(f"--- {key} ---")
+        print(f"Cross 점수: {cross_score}")
+        print(f"X 점수: {x_score}")
+        print(f"판정: {my_label} | expected: {expected_label} | {pass_fail}")
