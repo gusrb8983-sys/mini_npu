@@ -4,7 +4,7 @@ def load_json(path):
     """JSON 파일을 읽어 딕셔너리로 반환. 실패하면 None과 에러 메시지."""
     try:
         with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)            # json 모듈로 f를 파싱
+            data = json.load(f)           
     except FileNotFoundError:
         print(f"파일을 찾을 수 없습니다: {path}")
         return None
@@ -15,9 +15,9 @@ def load_json(path):
 
 def parse_size_from_key(key):
     """'size_5_1' 같은 패턴 키에서 크기(N)를 추출. 형식이 이상하면 None 반환."""
-    parts = key.split("_")     # 'size_5_1' → ['size', '5', '1']
+    parts = key.split("_")    
     try:
-        n = int(parts[1])               # parts의 몇 번째를 정수로 바꿔야 할까요?
+        n = int(parts[1])               
     except (IndexError, ValueError):
         return None
     return n

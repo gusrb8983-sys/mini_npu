@@ -1,3 +1,4 @@
+from perf import print_performance_table
 from io_console import read_grid, print_grid
 from mac import mac
 from judge import judge
@@ -29,45 +30,50 @@ if choice == "1":
     print("A 점수:", score_a)
     print("B 점수:", score_b)
     print(f"판정: {display}")
+    print()
+    print_performance_table([3])
 
 elif choice == "2":
     data = load_json("data.json")
+    if data is None:
+        print("data.json을 불러올 수 없어 모드 2를 진행할 수 없습니다.")
+    else:
+        for key, pattern_info in data["patterns"].items():
+            n = parse_size_from_key(key)
+            if n is None:
+                print(f"{key}: 키 형식 오류 → FAIL")
+                continue
 
-    for key, pattern_info in data["patterns"].items():
-        n = parse_size_from_key(key)
-        if n is None:
-            print(f"{key}: 키 형식 오류 → FAIL")
-            continue
+            filter_set = get_filter_set(data, n)
+            if filter_set is None:
+                print(f"{key}: size_{n} 필터를 찾을 수 없음 → FAIL")
+                continue
 
-        filter_set = get_filter_set(data, n)
-        if filter_set is None:
-            print(f"{key}: size_{n} 필터를 찾을 수 없음 → FAIL")
-            continue
+            try:
+                pattern = pattern_info["input"]
+                expected_raw = pattern_info["expected"]
+                cross_filter = filter_set["cross"]
+                x_filter = filter_set["x"]
+            except KeyError as e:
+                print(f"{key}: 스키마 오류 (누락된 키: {e}) → FAIL")
+                continue
 
-        pattern = pattern_info["input"]
+            if len(pattern) != n:
+                print(f"{key}: 패턴 크기가 {n}이 아님 → FAIL")
+                continue
 
-        if len(pattern) != n:
-            print(f"{key}: 패턴 크기가 {n}이 아님 → FAIL")
-            continue
+            cross_score = mac(pattern, cross_filter, n)
+            x_score = mac(pattern, x_filter, n)
 
-        cross_filter = filter_set["cross"]
-        x_filter = filter_set["x"]
+            result = judge(cross_score, x_score)
+            my_label = to_standard_label(result)
+            expected_label = normalize_label(expected_raw)
+            pass_fail = "PASS" if my_label == expected_label else "FAIL"
 
-        cross_score = mac(pattern, cross_filter, n)
-        x_score = mac(pattern, x_filter, n)
+            print(f"--- {key} ---")
+            print(f"Cross 점수: {cross_score}")
+            print(f"X 점수: {x_score}")
+            print(f"판정: {my_label} | expected: {expected_label} | {pass_fail}")
 
-        result = judge(cross_score, x_score)
-        print(key, "→", result)
-
-        result = judge(cross_score, x_score)
-        my_label = to_standard_label(result)
-
-        expected_raw = pattern_info["expected"]
-        expected_label = normalize_label(expected_raw)
-
-        pass_fail = "PASS" if my_label == expected_label else "FAIL"
-
-        print(f"--- {key} ---")
-        print(f"Cross 점수: {cross_score}")
-        print(f"X 점수: {x_score}")
-        print(f"판정: {my_label} | expected: {expected_label} | {pass_fail}")
+        print()
+        print_performance_table([3, 5, 13, 25])

@@ -13,7 +13,6 @@ def read_line(n, prompt):
             continue
         return row      # 성공했을 때만 반환
 
-
 def read_grid(n, title):
     """n줄을 입력받아 n×n 2차원 리스트로 반환"""
     print(f"{title} ({n}줄 입력, 공백 구분)")
