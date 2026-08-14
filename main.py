@@ -38,15 +38,26 @@ elif choice == "2":
     if data is None:
         print("data.json을 불러올 수 없어 모드 2를 진행할 수 없습니다.")
     else:
+        total_count = 0
+        pass_count = 0
+        fail_count = 0
+        fail_reasons = []
+
         for key, pattern_info in data["patterns"].items():
+            total_count += 1
+
             n = parse_size_from_key(key)
             if n is None:
                 print(f"{key}: 키 형식 오류 → FAIL")
+                fail_count += 1
+                fail_reasons.append(f"{key}: 키 형식 오류")
                 continue
 
             filter_set = get_filter_set(data, n)
             if filter_set is None:
                 print(f"{key}: size_{n} 필터를 찾을 수 없음 → FAIL")
+                fail_count += 1
+                fail_reasons.append(f"{key}: size_{n} 필터 없음")
                 continue
 
             try:
@@ -56,10 +67,14 @@ elif choice == "2":
                 x_filter = filter_set["x"]
             except KeyError as e:
                 print(f"{key}: 스키마 오류 (누락된 키: {e}) → FAIL")
+                fail_count += 1
+                fail_reasons.append(f"{key}: 스키마 오류 (누락된 키: {e})")
                 continue
 
             if len(pattern) != n:
                 print(f"{key}: 패턴 크기가 {n}이 아님 → FAIL")
+                fail_count += 1
+                fail_reasons.append(f"{key}: 패턴 크기 불일치")
                 continue
 
             cross_score = mac(pattern, cross_filter, n)
@@ -74,6 +89,21 @@ elif choice == "2":
             print(f"Cross 점수: {cross_score}")
             print(f"X 점수: {x_score}")
             print(f"판정: {my_label} | expected: {expected_label} | {pass_fail}")
+
+            if pass_fail == "PASS":
+                pass_count += 1
+            else:
+                fail_count += 1
+                fail_reasons.append(f"{key}: 동점(UNDECIDED) 처리 규칙에 따라 FAIL" if my_label == "UNDECIDED" else f"{key}: 판정 불일치")
+
+        print()
+        print(f"총 테스트: {total_count}개")
+        print(f"통과: {pass_count}개")
+        print(f"실패: {fail_count}개")
+        if fail_reasons:
+            print("실패 케이스:")
+            for reason in fail_reasons:
+                print("-", reason)
 
         print()
         print_performance_table([3, 5, 13, 25])
