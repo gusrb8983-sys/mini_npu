@@ -1,5 +1,5 @@
 import time
-from mac import mac
+from src.mac import mac
 
 def measure_mac_time(pattern, filt, n, repeat=10):
     """MAC 연산을 repeat번 반복 측정해 평균 시간(ms)을 반환"""
